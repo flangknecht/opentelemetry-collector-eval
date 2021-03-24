@@ -6,11 +6,11 @@
 - Create k8s deployment descriptor
   - Generator deployment
     - Trace generator app
-    - Collector Agent sidecar
+    - OTel Collector Agent sidecar
       - Use consistent hashing to route to individual backends by traceid
-
-  - Collector instances
+  - OTel Collector instances
     - Use tailbasedsamplingprocessor, sampling all traces with attribute `http.status_code` in [400;599]
+  - Jaeger Collector + Jaeger Query + Jaeger UI (jaeger-all-in-one)
 
 
 ## Agent config
@@ -38,8 +38,6 @@ exporters:
         - tailsamplingbackend-1:55680
         - tailsamplingbackend-2:55680
         - tailsamplingbackend-3:55680
-        - tailsamplingbackend-4:55680
-
 service:
   pipelines:
     traces:
@@ -50,7 +48,7 @@ service:
         - loadbalancing
 ```
 
-## Tailsampling instance config
+## Tailsampling collector instance config
 
 
 ```yaml
@@ -58,9 +56,8 @@ receivers:
   otlp:
     protocols:
 exporters:
-  otlp:
-    endpoint: "otel-collector:4317"
-    insecure: true
+  jaeger:
+    endpoint: "jaeger:14250"
 processors:
   tail_sampling:
     decision_wait: 10s
