@@ -12,7 +12,6 @@
     - Use tailbasedsamplingprocessor, sampling all traces with attribute `http.status_code` in [400;599]
   - Jaeger Collector + Jaeger Query + Jaeger UI (jaeger-all-in-one)
 
-
 ## Agent config
 
 ```yaml
@@ -21,9 +20,7 @@ receivers:
     protocols:
       grpc:
         endpoint: localhost:55680
-
 processors:
-
 exporters:
   logging:
   loadbalancing:
@@ -55,9 +52,12 @@ service:
 receivers:
   otlp:
     protocols:
+      grpc:
 exporters:
+  logging:
   jaeger:
-    endpoint: "jaeger:14250"
+    endpoint: jaeger:14250
+    insecure: true
 processors:
   tail_sampling:
     decision_wait: 10s
@@ -74,10 +74,17 @@ processors:
           }
         }
       ]
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
 service:
+  extensions: [pprof, zpages, health_check]
   pipelines:
     traces:
       receivers: [otlp]
       processors: [tail_sampling]
-      exporters: [otlp]
+      exporters: [logging, jaeger]
 ```
