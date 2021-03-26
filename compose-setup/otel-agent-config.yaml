@@ -2,19 +2,27 @@ receivers:
   otlp:
     protocols:
       grpc:
-  opencensus:
   jaeger:
     protocols:
       grpc:
       thrift_http:
-  zipkin:
 
 exporters:
-  otlp:
-    endpoint: "otel-collector:4317"
-    insecure: true
   logging:
     loglevel: debug
+  loadbalancing:
+    protocol:
+      otlp:
+        # all options from the OTLP exporter are supported
+        # except the endpoint
+        timeout: 1s
+        insecure: true
+    resolver:
+      static:
+        hostnames:
+        - tailsamplingbackend1:4317
+        - tailsamplingbackend2:4317
+        - tailsamplingbackend3:4317
 
 processors:
   batch:
@@ -30,10 +38,6 @@ service:
   extensions: [health_check, pprof, zpages]
   pipelines:
     traces:
-      receivers: [otlp, opencensus, jaeger, zipkin]
+      receivers: [otlp, jaeger]
       processors: [batch]
-      exporters: [otlp, logging]
-    metrics:
-      receivers: [otlp, opencensus]
-      processors: [batch]
-      exporters: [otlp, logging]
+      exporters: [logging, loadbalancing]

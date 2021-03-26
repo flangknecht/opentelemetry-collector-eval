@@ -10,7 +10,39 @@ services:
       - "14250"
 
   # Collector
-  otel-collector:
+  tailsamplingbackend1:
+    image: otel/opentelemetry-collector-contrib-dev
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888"   # pprof extension
+      - "8888"   # Prometheus metrics exposed by the collector
+      - "8889"   # Prometheus exporter metrics
+      - "13133" # health_check extension
+      - "4317"        # OTLP gRPC receiver
+      - "55670" # zpages extension
+    depends_on:
+      - jaeger-all-in-one
+
+  # Collector
+  tailsamplingbackend2:
+    image: otel/opentelemetry-collector-contrib-dev
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888"   # pprof extension
+      - "8888"   # Prometheus metrics exposed by the collector
+      - "8889"   # Prometheus exporter metrics
+      - "13133" # health_check extension
+      - "4317"        # OTLP gRPC receiver
+      - "55670" # zpages extension
+    depends_on:
+      - jaeger-all-in-one
+
+  # Collector
+  tailsamplingbackend3:
     image: otel/opentelemetry-collector-contrib-dev
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
     volumes:
@@ -41,7 +73,9 @@ services:
       - "55679" # zpages extension
       - "13133"       # health_check
     depends_on:
-      - otel-collector
+      - tailsamplingbackend1
+      - tailsamplingbackend2
+      - tailsamplingbackend3
 
   # Synthetic load generators
   jaeger-emitter:

@@ -20,6 +20,10 @@ receivers:
     protocols:
       grpc:
         endpoint: localhost:55680
+  jaeger:
+    protocols:
+      grpc:
+      thrift_http:
 processors:
 exporters:
   logging:
@@ -32,9 +36,9 @@ exporters:
     resolver:
       static:
         hostnames:
-        - tailsamplingbackend-1:55680
-        - tailsamplingbackend-2:55680
-        - tailsamplingbackend-3:55680
+        - tailsamplingbackend-1:4317
+        - tailsamplingbackend-2:4317
+        - tailsamplingbackend-3:4317
 service:
   pipelines:
     traces:
