@@ -23,7 +23,7 @@ services:
       - "4317"        # OTLP gRPC receiver
       - "55670" # zpages extension
     depends_on:
-      - jaeger-all-in-one
+      - jaeger
 
   # Collector
   tailsamplingbackend2:
@@ -39,7 +39,7 @@ services:
       - "4317"        # OTLP gRPC receiver
       - "55670" # zpages extension
     depends_on:
-      - jaeger-all-in-one
+      - jaeger
 
   # Collector
   tailsamplingbackend3:
@@ -55,7 +55,7 @@ services:
       - "4317"        # OTLP gRPC receiver
       - "55670" # zpages extension
     depends_on:
-      - jaeger-all-in-one
+      - jaeger
 
   # Agent
   otel-agent:
