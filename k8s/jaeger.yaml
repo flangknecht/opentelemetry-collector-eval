@@ -30,6 +30,8 @@ spec:
               cpu: 300m
               memory: 300Mi
       restartPolicy: Always
+      nodeSelector:
+        cpuarch: amd64
 
 ---
 

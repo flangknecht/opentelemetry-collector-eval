@@ -49,6 +49,8 @@ spec:
             name: data
             subPath: config.yaml
             readOnly: true
+      nodeSelector:
+        cpuarch: amd64
       restartPolicy: Always
       terminationGracePeriodSeconds: 50
       volumes:

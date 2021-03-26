@@ -40,7 +40,8 @@ spec:
       - name: data
         configMap:
           name: otel-collector-config
-
+      nodeSelector:
+        cpuarch: amd64
       restartPolicy: Always
 
 ---
