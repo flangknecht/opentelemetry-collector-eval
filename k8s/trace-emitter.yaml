@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: jaeger-emitter
+  name: jaeger-emitter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: jaeger-emitter
+  template:
+    metadata:
+      labels:
+        io.kompose.service: jaeger-emitter
+    spec:
+      containers:
+        - name: jaeger-emitter
+          image: omnition/synthetic-load-generator:1.0.29
+          env:
+            - name: JAEGER_COLLECTOR_URL
+              value: http://localhost:14268
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 400Mi
+            requests:
+              cpu: 300m
+              memory: 100Mi
+        - name: otel-collector-agent
+          image: otel/opentelemetry-collector-contrib:0.22.0
+          ports:
+            - containerPort: 14250
+            - containerPort: 14268
+            - containerPort: 55678
+            - containerPort: 4317
+            - containerPort: 9411
+            - containerPort: 1777
+            - containerPort: 13133
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          volumeMounts:
+          - mountPath: /etc/otel/config.yaml
+            name: data
+            subPath: config.yaml
+            readOnly: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 50
+      volumes:
+      - name: data
+        configMap:
+          name: otel-agent-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-agent-config
+data:
+  config.yaml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+      jaeger:
+        protocols:
+          grpc:
+          thrift_http:
+    exporters:
+      loadbalancing:
+        protocol:
+          otlp:
+            # all options from the OTLP exporter are supported
+            # except the endpoint
+            timeout: 1s
+            insecure: true
+        resolver:
+          dns:
+            hostname: tailsampling-collector-backend
+            port: 4317
+    processors:
+      batch:
+    extensions:
+      pprof:
+        endpoint: :1777
+      zpages:
+        endpoint: :55679
+      health_check:
+    service:
+      extensions: [health_check, pprof, zpages]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [batch]
+          exporters: [loadbalancing]

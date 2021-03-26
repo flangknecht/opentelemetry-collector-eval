@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: tailsampling-collector-backend
+  name: tailsampling-collector-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      io.kompose.service: tailsampling-collector-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: tailsampling-collector-backend
+    spec:
+      containers:
+        - name: tailsampling-collector-backend
+          image: otel/opentelemetry-collector-contrib-dev
+          ports:
+            - containerPort: 1888
+            - containerPort: 8888
+            - containerPort: 8889
+            - containerPort: 13133
+            - containerPort: 4317
+            - containerPort: 55670
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2000Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+          - mountPath: /etc/otel/config.yaml
+            name: data
+            subPath: config.yaml
+            readOnly: true
+      volumes:
+      - name: data
+        configMap:
+          name: otel-collector-config
+
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: tailsampling-collector-backend
+  name: tailsampling-collector-backend
+spec:
+  # Headless service to allow DNS resolution of all endpoints
+  type: ClusterIP
+  clusterIP: None
+  sessionAffinity: None
+  ports:
+    - name: "1888"
+      port: 1888
+      targetPort: 1888
+    - name: "8888"
+      port: 8888
+      targetPort: 8888
+    - name: "8889"
+      port: 8889
+      targetPort: 8889
+    - name: "13133"
+      port: 13133
+      targetPort: 13133
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "55670"
+      port: 55670
+      targetPort: 55670
+  selector:
+    io.kompose.service: tailsampling-collector-backend
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+data:
+  config.yaml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    exporters:
+      logging:
+      jaeger:
+        endpoint: jaeger:14250
+        insecure: true
+    processors:
+      tail_sampling:
+        decision_wait: 30s
+        policies:
+          [
+            {
+              name: sample-http-errors, 
+              type: numeric_attribute,
+              numeric_attribute:
+              {
+                key: http.status_code,
+                min_value: 400,
+                max_value: 599
+              }
+            }
+          ]
+    extensions:
+      health_check:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+    service:
+      extensions: [pprof, zpages, health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [tail_sampling]
+          exporters: [logging, jaeger]
