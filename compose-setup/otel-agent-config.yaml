@@ -8,8 +8,6 @@ receivers:
       thrift_http:
 
 exporters:
-  logging:
-    loglevel: debug
   loadbalancing:
     protocol:
       otlp:
@@ -40,4 +38,4 @@ service:
     traces:
       receivers: [otlp, jaeger]
       processors: [batch]
-      exporters: [logging, loadbalancing]
+      exporters: [loadbalancing]
