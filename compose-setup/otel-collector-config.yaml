@@ -12,7 +12,7 @@ exporters:
 
 processors:
   tail_sampling:
-    decision_wait: 10s
+    decision_wait: 30s
     policies:
       [
         {

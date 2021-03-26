@@ -79,8 +79,9 @@ services:
 
   # Synthetic load generators
   jaeger-emitter:
-    image: omnition/synthetic-load-generator:1.0.25
+    image: omnition/synthetic-load-generator:1.0.29
     environment:
       - JAEGER_COLLECTOR_URL=http://otel-agent:14268
+      # - TOPOLOGY_FILE=./topologies/100_000_spans_per_second.json
     depends_on:
       - otel-agent
