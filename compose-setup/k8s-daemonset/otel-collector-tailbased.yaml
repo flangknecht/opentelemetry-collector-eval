@@ -98,3 +98,50 @@ spec:
     port: 4317
   selector:
     component: otel-collector
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-agent-config
+data:
+  config.yaml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+      jaeger:
+        protocols:
+          grpc:
+          thrift_http:
+    exporters:
+      loadbalancing:
+        protocol:
+          otlp:
+            # all options from the OTLP exporter are supported
+            # except the endpoint
+            timeout: 1s
+            insecure: true
+        resolver:
+          static:
+            hostnames:
+            - tailsamplingbackend1:4317
+            - tailsamplingbackend2:4317
+            - tailsamplingbackend3:4317
+    processors:
+      batch:
+    extensions:
+      pprof:
+        endpoint: :1777
+      zpages:
+        endpoint: :55679
+      health_check:
+    service:
+      extensions: [health_check, pprof, zpages]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [batch]
+          exporters: [loadbalancing]
+
