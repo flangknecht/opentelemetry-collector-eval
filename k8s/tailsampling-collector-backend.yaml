@@ -99,6 +99,7 @@ data:
     processors:
       tail_sampling:
         decision_wait: 30s
+        num_traces: 1000000
         policies:
           [
             {
