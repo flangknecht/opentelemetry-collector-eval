@@ -9,7 +9,7 @@ services:
       - "14268"
       - "14250"
 
-  # Collector
+  # Collector - Tier 2
   tailsamplingbackend1:
     image: otel/opentelemetry-collector-contrib-dev
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
@@ -25,7 +25,7 @@ services:
     depends_on:
       - jaeger
 
-  # Collector
+  # Collector - Tier 2
   tailsamplingbackend2:
     image: otel/opentelemetry-collector-contrib-dev
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
@@ -41,7 +41,7 @@ services:
     depends_on:
       - jaeger
 
-  # Collector
+  # Collector - Tier 2
   tailsamplingbackend3:
     image: otel/opentelemetry-collector-contrib-dev
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
@@ -57,7 +57,7 @@ services:
     depends_on:
       - jaeger
 
-  # Agent
+  # Agent - Tier 1
   otel-agent:
     image: otel/opentelemetry-collector-contrib-dev
     command: ["--config=/etc/otel-agent-config.yaml", "${OTELCOL_ARGS}"]
